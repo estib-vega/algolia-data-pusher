@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Hind:300,400|Montserrat:300" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="./css/main.css">
+    <title>Algolia Data Pusher</title>
+</head>
+<body>
+    <h2>Algolia Data Pusher</h2>
+    <div class="form-container fade-in" id="card_0">
+        <div class="head-statement">
+            <h3>1. Credentials</h3>
+            <p>Please enter your Algolia API credentials to continue</p>
+        </div>
+        
+        <div class="input-container">
+            <input type="text" name="api_key" id="api_key" placeholder="API Key" autofocus>
+            <input type="text" name="app_id" id="app_id" placeholder="App Id">
+            <input type="text" name="index_name" id="index_name" placeholder="Index name">
+            <button onclick="changeTo(1)" class="next">Next</button>
+        </div>
+    </div>
+
+    <div class="form-container" id="card_1">
+        <div class="head-statement">
+            <h3>2. Data File</h3>
+            <p>Please select a json file with the data you wish to push to your algolia index</p>
+        </div>
+        
+        <div class="input-container">
+                <input type="file" name="input_file" id="input_file" class="inputfile" accept=".json" onchange="handleFile()">
+                <label id="file_label" for="input_file">Choose a file</label>
+            <div class="button-container">
+                <button onclick="changeTo(0)" class="back">Back</button>
+                <button onclick="changeTo(2)" class="next" disabled id="send_button">Send</button>
+            </div>
+            
+        </div>
+    </div>
+    
+
+    <script>
+        // post the data to the backend
+        async function doPost(){
+            const url = "/fileupload";
+            
+            const file = document.getElementById("input_file").files[0]
+            var fd = new FormData();
+            fd.append("file", file);
+            
+            $.ajax({
+                method: 'POST',
+                url: "/fileupload",
+                data: fd,
+                processData: false,
+                contentType: false,
+                dataType: "json",
+                async: false,
+            }).done(function(data){
+                console.log("posted");
+            })
+        }
+
+        // animate form cards
+        function animate(card){
+            if(card === 0){
+                // disappear prev card
+                document.getElementById("card_1").classList.add("fade-out");
+                document.getElementById("card_1").classList.remove("fade-in");
+                // appear card 1
+                document.getElementById("card_0").classList.add("fade-in");
+                document.getElementById("card_0").classList.remove("fade-out");
+            } else {
+                // disappear prev card
+                document.getElementById("card_0").classList.add("fade-out");
+                document.getElementById("card_0").classList.remove("fade-in");
+                // appear card 1
+                document.getElementById("card_1").classList.add("fade-in");
+                document.getElementById("card_1").classList.remove("fade-out");
+            }
+            
+        }
+
+        // navigate between form steps
+        function changeTo(step){
+            switch(step){
+                case 0:
+                    animate(0)
+                    // going back disables the send button
+                    document.getElementById("send_button").disabled = true;
+                    break;
+                case 1:
+                    animate(1)
+                    // data file
+                    document.getElementById("file_label").innerText = "Choose a file"
+                    break;
+                case 2:
+                    // send data file
+                    doPost()
+                    break;
+                default:
+                    break;
+            }
+        }
+        
+        // check when the file has been selected
+        function handleFile(){
+            var doc = document.getElementById("input_file");
+            const docname = doc.files[0].name
+            document.getElementById("file_label").innerText = docname    
+            document.getElementById("send_button").disabled = false;
+        }
+
+    </script>
+</body>
+</html>
